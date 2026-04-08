@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TZS AI - Powered by TZS TECH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --black-soft: #141414;
+            --orange: #ff6b1a;
+            --orange-glow: rgba(255, 107, 26, 0.2);
+            --text: #f0ece4;
+            --text-dim: #888;
+            --border: rgba(255,107,26,0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--black);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--black-soft);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 30px;
+        }
+
+        .logo span { color: var(--orange); }
+
+        .new-chat {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--orange);
+            color: var(--orange);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+
+        .new-chat:hover { background: var(--orange-glow); }
+
+        /* Main Area */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10,10,10,0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Messages */
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message { display: flex; gap: 15px; max-width: 85%; }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+        
+        .avatar {
+            width: 35px; height: 35px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; flex-shrink: 0;
+        }
+        .ai .avatar { background: var(--orange); color: #000; }
+        .user .avatar { background: #333; color: var(--text); }
+
+        .bubble {
+            padding: 14px 18px;
+            border-radius: 12px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .ai .bubble { background: #1a1a1a; border: 1px solid var(--border); }
+        .user .bubble { background: var(--orange); color: #000; font-weight: 500; }
+
+        .bubble img {
+            max-width: 300px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Input Area */
+        .input-wrapper {
+            padding: 20px 30px;
+            background: var(--black);
+            border-top: 1px solid var(--border);
+        }
+
+        .preview-box {
+            display: none;
+            padding: 10px;
+            position: relative;
+            width: fit-content;
+        }
+        .preview-box img { width: 60px; height: 60px; border-radius: 8px; border: 1px solid var(--orange); }
+        .remove-img {
+            position: absolute; top: 0; right: 0;
+            background: red; color: white; border-radius: 50%;
+            width: 18px; height: 18px; font-size: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+
+        .input-box {
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            max-height: 150px;
+        }
+
+        .icon-btn { color: var(--text-dim); cursor: pointer; transition: 0.2s; font-size: 20px; }
+        .icon-btn:hover { color: var(--orange); }
+        
+        .send-btn {
+            background: var(--orange);
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #loading { display: none; color: var(--orange); font-size: 12px; margin-top: 5px; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo">⚡ TZS <span>AI</span></div>
+    <button class="new-chat" onclick="location.reload()">+ New Conversation</button>
+    <div style="margin-top: auto; font-size: 10px; color: var(--text-dim);">
+        &copy; 2026 TZS TECH <br> All Rights Reserved.
+    </div>
+</aside>
+
+<main class="main">
+    <div class="header">
+        <div style="font-size: 12px; letter-spacing: 1px; color: var(--text-dim);">SYSTEM: ONLINE</div>
+        <div style="font-size: 14px; font-weight: bold;">TZS AI <small style="color:var(--orange)">v1.5</small></div>
+    </div>
+
+    <div id="chat-container">
+        <div class="message ai">
+            <div class="avatar">T</div>
+            <div class="bubble">হ্যালো! আমি <b>TZS AI</b>। আমি আপনাকে টেক্সট এবং ইমেজ এনালাইসিস করতে সাহায্য করতে পারি। আমি আপনার ইউটিউব চ্যানেল <b>TZS TECH</b> এর একটি বিশেষ প্রোজেক্ট। আজ কিভাবে সাহায্য করতে পারি?</div>
+        </div>
+    </div>
+
+    <div class="input-wrapper">
+        <div class="preview-box" id="preview-box">
+            <div class="remove-img" onclick="clearImage()">×</div>
+            <img id="img-preview" src="">
+        </div>
+        <div class="input-box">
+            <label class="icon-btn">
+                📷
+                <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleImage(event)">
+            </label>
+            <textarea id="user-input" placeholder="আপনার প্রশ্নটি লিখুন..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+            <button class="send-btn" onclick="sendMessage()">SEND</button>
+        </div>
+        <div id="loading">TZS AI চিন্তা করছে...</div>
+    </div>
+</main>
+
+<script>
+    // --- গুরুত্বপূর্ণ: আপনার API Key এখানে দিন ---
+    const API_KEY = "YOUR_GEMINI_API_KEY"; 
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+    let currentImageData = null;
+
+    function handleImage(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('img-preview').src = event.target.result;
+                document.getElementById('preview-box').style.display = 'block';
+                currentImageData = event.target.result.split(',')[1];
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function clearImage() {
+        currentImageData = null;
+        document.getElementById('preview-box').style.display = 'none';
+        document.getElementById('file-input').value = '';
+    }
+
+    async function sendMessage() {
+        const inputField = document.getElementById('user-input');
+        const text = inputField.value.trim();
+        if (!text && !currentImageData) return;
+
+        appendMessage('user', text, currentImageData);
+        
+        // UI Reset
+        inputField.value = '';
+        inputField.style.height = 'auto';
+        const imageToSend = currentImageData;
+        clearImage();
+        document.getElementById('loading').style.display = 'block';
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: "You are TZS AI, created by TZS TECH. Respond in a helpful way. Question: " + text },
+                            ...(imageToSend ? [{ inline_data: { mime_type: "image/jpeg", data: imageToSend } }] : [])
+                        ]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+            const aiText = data.candidates[0].content.parts[0].text;
+            appendMessage('ai', aiText);
+        } catch (error) {
+            appendMessage('ai', "দুঃখিত, API সংযোগে সমস্যা হয়েছে। দয়া করে আপনার API Key চেক করুন।");
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    function appendMessage(role, text, img = null) {
+        const container = document.getElementById('chat-container');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${role}`;
+        
+        let imgTag = img ? `<img src="data:image/jpeg;base64,${img}">` : "";
+        let avatarTag = role === 'ai' ? 'T' : 'U';
+
+        msgDiv.innerHTML = `
+            <div class="avatar">${avatarTag}</div>
+            <div class="bubble">
+                ${imgTag}
+                <div>${text.replace(/\n/g, '<br>')}</div>
+            </div>
+        `;
+
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
